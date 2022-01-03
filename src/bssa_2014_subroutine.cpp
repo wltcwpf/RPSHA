@@ -126,7 +126,7 @@ NumericVector bssa_2014_subroutine(float M, int ip, float Rjb, int U, int SS, in
 
 
   /* site effect */
-  if(Vs30 != v_ref | ip != 1){
+  if((Vs30 != v_ref) | (ip != 1)){
     pgar = bssa_2014_subroutine(M, 1, Rjb, U, SS, NS, RS, region, z1, v_ref, coeffs);
     PGA_r = pgar[0];
     sigma_r = pgar[1];
@@ -222,7 +222,7 @@ NumericVector bssa_2014_subroutine(float M, int ip, float Rjb, int U, int SS, in
   if(M <= 4.5){
     tau = tau1[ip];
     phi_M = phi1[ip];
-  }else if(4.5 < M & M < 5.5){
+  }else if((4.5 < M) & (M < 5.5)){
     tau = tau1[ip] + (tau2[ip] - tau1[ip]) * (M - 4.5);
     phi_M = phi1[ip] + (phi2[ip] - phi1[ip]) * (M - 4.5);
   }else {  /* M >= 5.5 */
@@ -232,7 +232,7 @@ NumericVector bssa_2014_subroutine(float M, int ip, float Rjb, int U, int SS, in
 
   if(Rjb <= R1[ip]){
     phi_MR = phi_M;
-  }else if(R1[ip] < Rjb & Rjb <= R2[ip]){
+  }else if((R1[ip] < Rjb) & (Rjb <= R2[ip])){
     phi_MR = phi_M + dphiR[ip] * (log(Rjb / R1[ip]) / log(R2[ip] / R1[ip]));
   }else if(Rjb > R2[ip]){
     phi_MR = phi_M + dphiR[ip];
@@ -240,7 +240,7 @@ NumericVector bssa_2014_subroutine(float M, int ip, float Rjb, int U, int SS, in
 
   if(Vs30 >= v2){
     phi_MRV = phi_MR;
-  }else if(v1 <= Vs30 & Vs30 <= v2){
+  }else if((v1 <= Vs30) & (Vs30 <= v2)){
     phi_MRV = phi_MR - dphiV[ip] * (log(v2 / Vs30) / log(v2 / v1));
   }else{  /* Vs30 <= v1 */
   phi_MRV = phi_MR - dphiV[ip];
