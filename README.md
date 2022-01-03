@@ -21,6 +21,8 @@ motion map selection to assess seismic hazard for regional distributed
 infrastructures that are no longer independent but spatially
 distributed.
 
+Note, this package is still under development.
+
 ## Installation
 
 You can install the development version from
