@@ -86,9 +86,6 @@ NumericVector bssa_2014_subroutine(float M, int ip, float Rjb, int U, int SS, in
   double F_P;
   NumericVector pgar(4);
   double PGA_r;
-  double sigma_r;
-  double phi_r;
-  double tau_r;
   double ln_Flin;
   double f2;
   double ln_Fnlin;
@@ -113,11 +110,11 @@ NumericVector bssa_2014_subroutine(float M, int ip, float Rjb, int U, int SS, in
   /* Rprintf("The source effect is: %f \n", F_E); */
 
   /* path effect */
-  if(region == 0 | region == 1){
+  if((region == 0) | (region == 1)){
     deltac3 = deltac3_gloCATW;
   }else if(region == 3){
     deltac3 = deltac3_CHTU;
-  }else if(region == 2 | region == 4){
+  }else if((region == 2) | (region == 4)){
     deltac3 = deltac3_ITJA;
   }
   r = pow(pow(Rjb, 2) + pow(h[ip], 2), 0.5);
@@ -129,9 +126,6 @@ NumericVector bssa_2014_subroutine(float M, int ip, float Rjb, int U, int SS, in
   if((Vs30 != v_ref) | (ip != 1)){
     pgar = bssa_2014_subroutine(M, 1, Rjb, U, SS, NS, RS, region, z1, v_ref, coeffs);
     PGA_r = pgar[0];
-    sigma_r = pgar[1];
-    phi_r = pgar[2];
-    tau_r = pgar[3];
 
     /* linear component */
     if(Vs30<= vc[ip]){
@@ -234,7 +228,7 @@ NumericVector bssa_2014_subroutine(float M, int ip, float Rjb, int U, int SS, in
     phi_MR = phi_M;
   }else if((R1[ip] < Rjb) & (Rjb <= R2[ip])){
     phi_MR = phi_M + dphiR[ip] * (log(Rjb / R1[ip]) / log(R2[ip] / R1[ip]));
-  }else if(Rjb > R2[ip]){
+  }else { /*  Rjb > R2[ip] */
     phi_MR = phi_M + dphiR[ip];
   }
 
