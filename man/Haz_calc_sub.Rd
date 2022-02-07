@@ -4,7 +4,7 @@
 \alias{Haz_calc_sub}
 \title{The subroutine of hazard curve calculation}
 \usage{
-Haz_calc_sub(df_source, source_type, period, IM, z1, Vs30, coeffs, weight = 1)
+Haz_calc_sub(df_source, source_type, period, IM, z1, Vs30, weight = 1)
 }
 \arguments{
 \item{df_source}{The returned dataframe by \code{flts_filter} and \code{pts_filter} functions}
@@ -19,8 +19,6 @@ Haz_calc_sub(df_source, source_type, period, IM, z1, Vs30, coeffs, weight = 1)
 -999 if unknown. A numeric value.}
 
 \item{Vs30}{Shear wave velocity averaged over top 30 m (in m/s). A numeric value.}
-
-\item{coeffs}{The coefficient matrix of BSSA 2014. You can use the internal saved data object, bssa_2014_coeffs}
 
 \item{weight}{The weight that is supposed to be considered for the hazard}
 }

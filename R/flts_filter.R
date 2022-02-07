@@ -88,7 +88,6 @@ flts_filter <- function(slat, slon, max_dist = 300, branch = 1) {
 
 # helper functions
 # ------------------------------------------------------------------------------------------------------------
-#' @export
 Get_Traces <- function( Traces ){
 
   # Traces: the traces for section
@@ -108,7 +107,7 @@ Get_Traces <- function( Traces ){
   return( res )
 }
 
-#' @export
+
 Get_MinRrupRjb <- function( Traces, Dip, Topd, Width, Slon, Slat ){
 
   # this function calculates the minimum Rrup/Rjb from the trace (each of the sub-rectangles) to the site

@@ -14,14 +14,11 @@ Yes!](https://img.shields.io/badge/Open%20Source-Yes-green.svg)](https://github.
 <!-- badges: end -->
 
 RPSHA stands for Regional Probabilistic Seismic Hazard Assessment. This
-package is developed to conduct the conventional PSHA for independent
-sites in California using UCERF3 source model. More importantly, this
-package implements LASSO regression for event selection and ground
-motion map selection to assess seismic hazard for regional distributed
-infrastructures that are no longer independent but spatially
-distributed.
+package is developed to implement LASSO regression for event and ground
+motion map selection. It also includes some functions to conduct
+converntional site-based PSHA in California using UCERF3 source model.
 
-Note, this package is still under development.
+Note, the ground motion map selection is still under development.
 
 ## Installation
 
@@ -33,3 +30,13 @@ You can install the development version from
 library(devtools)
 devtools::install_github("wltcwpf/RPSHA")
 ```
+
+## Usage
+
+Please check out [wiki](https://github.com/wltcwpf/RPSHA/wiki) for more
+detailed instructions!
+
+## Issues
+
+Please report any running issues or leave your comments on the
+[Issues](https://github.com/wltcwpf/RPSHA/issues) page!

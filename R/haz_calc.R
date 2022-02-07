@@ -59,7 +59,7 @@ Haz_calc <- function(slat, slon, Vs30, z1 = -999, max_dist = 300, periods, IM_ma
   for (i in 1:length(periods)) {
 
     tmp_Haz_mat <- Haz_calc_sub(df_source = Flts, source_type = 0, period = periods[i],
-                                IM = IM_mat[i, ], z1 = z1, Vs30 = Vs30, coeffs = as.matrix(bssa_2014_coeffs),
+                                IM = IM_mat[i, ], z1 = z1, Vs30 = Vs30,
                                 weight = 0.5)   # weight of branch 3.1 is 0.5
 
     haz_curves[i, ] <- colSums(tmp_Haz_mat)
@@ -71,7 +71,7 @@ Haz_calc <- function(slat, slon, Vs30, z1 = -999, max_dist = 300, periods, IM_ma
   for (i in 1:length(periods)) {
 
     tmp_Haz_mat <- Haz_calc_sub(df_source = Flts, source_type = 0, period = periods[i],
-                                IM = IM_mat[i, ], z1 = z1, Vs30 = Vs30, coeffs = as.matrix(bssa_2014_coeffs),
+                                IM = IM_mat[i, ], z1 = z1, Vs30 = Vs30,
                                 weight = 0.5)   # weight of branch 3.2 is 0.5
 
     haz_curves[i, ] <- colSums(tmp_Haz_mat) + haz_curves[i, ]
@@ -83,7 +83,7 @@ Haz_calc <- function(slat, slon, Vs30, z1 = -999, max_dist = 300, periods, IM_ma
   for (i in 1:length(periods)) {
 
     tmp_Haz_mat <- Haz_calc_sub(df_source = Pts, source_type = 1, period = periods[i],
-                                IM = IM_mat[i, ], z1 = z1, Vs30 = Vs30, coeffs = as.matrix(bssa_2014_coeffs),
+                                IM = IM_mat[i, ], z1 = z1, Vs30 = Vs30,
                                 weight = 0.5)   # weight of branch 3.1 is 0.5
 
     haz_curves[i, ] <- colSums(tmp_Haz_mat) + haz_curves[i, ]
@@ -95,7 +95,7 @@ Haz_calc <- function(slat, slon, Vs30, z1 = -999, max_dist = 300, periods, IM_ma
   for (i in 1:length(periods)) {
 
     tmp_Haz_mat <- Haz_calc_sub(df_source = Pts, source_type = 1, period = periods[i],
-                                IM = IM_mat[i, ], z1 = z1, Vs30 = Vs30, coeffs = as.matrix(bssa_2014_coeffs),
+                                IM = IM_mat[i, ], z1 = z1, Vs30 = Vs30,
                                 weight = 0.5)   # weight of branch 3.2 is 0.5
 
     haz_curves[i, ] <- colSums(tmp_Haz_mat) + haz_curves[i, ]
@@ -153,11 +153,10 @@ Haz_calc <- function(slat, slon, Vs30, z1 = -999, max_dist = 300, periods, IM_ma
 #' @param z1 Basin depth (km): depth from the ground surface to the 1km/s shear-wave horizon.
 #' -999 if unknown. A numeric value.
 #' @param Vs30 Shear wave velocity averaged over top 30 m (in m/s). A numeric value.
-#' @param coeffs The coefficient matrix of BSSA 2014. You can use the internal saved data object, bssa_2014_coeffs
 #' @param weight The weight that is supposed to be considered for the hazard
 #' @return A hazard matrix at the given IM levels for each event in \code{df_sources}
 #' @export
-Haz_calc_sub <- function(df_source, source_type, period, IM, z1, Vs30, coeffs, weight = 1) {
+Haz_calc_sub <- function(df_source, source_type, period, IM, z1, Vs30, weight = 1) {
 
   if (source_type == 0) {
 
@@ -176,7 +175,7 @@ Haz_calc_sub <- function(df_source, source_type, period, IM, z1, Vs30, coeffs, w
     Tmp_region <- rep(1, nrow(df_source))
 
     Tmp_GMM <- bssa_2014_nga(M = Tmp_M, period = period, Rjb = Tmp_Rjb, Fault_Type = Tmp_FT, region = Tmp_region,
-                             z1 = z1, Vs30 = Vs30, coeffs = coeffs)
+                             z1 = z1, Vs30 = Vs30, coeffs = as.matrix(bssa_2014_coeffs))
 
     Pexd_mat <- apply(Tmp_GMM, 1, function(x){
       stats::pnorm( q = log( IM ), mean = log( x[1] ), sd = x[2], lower.tail = F )
@@ -199,7 +198,7 @@ Haz_calc_sub <- function(df_source, source_type, period, IM, z1, Vs30, coeffs, w
     Tmp_region <- rep(1, nrow(df_source))
 
     Tmp_GMM <- bssa_2014_nga(M = Tmp_M, period = period, Rjb = Tmp_Rjb, Fault_Type = Tmp_FT, region = Tmp_region,
-                             z1 = z1, Vs30 = Vs30, coeffs = coeffs)
+                             z1 = z1, Vs30 = Vs30, coeffs = as.matrix(bssa_2014_coeffs))
 
     Pexd_mat <- apply(Tmp_GMM, 1, function(x){
       stats::pnorm( q = log( IM ), mean = log( x[1] ), sd = x[2], lower.tail = F )
@@ -210,4 +209,128 @@ Haz_calc_sub <- function(df_source, source_type, period, IM, z1, Vs30, coeffs, w
 
   return(Haz_mat)
 }
+
+
+
+#' The subroutine function for hazard curve calculation at a site from a given event
+#'
+#' This is a subroutine function to calculate the hazard curve (annual exceedance rate curve)
+#' at a site from a given event
+#'
+#' @param Mag The magnitude of the event
+#' @param AORate The annual occurrence rate of the event
+#' @param Fault_type An indicator for fault type : 0 for unspecified fault;
+#' 1 for strike-slip fault; 2 for normal fault; 3 for reverse fault.
+#' @param region An indicator for region: 0 for global (incl. Taiwan); 1 for California;
+#' 2 for Japan; 3 for China or Turkey; 4 for Italy.
+#' @param periods An interest period or period arrays (0 for PGA, -1 for PGV)
+#' @param IM_mat A vector or a matrix that specifies the IM exceedance levels for
+#' hazard curve calculation.
+#' If \code{periods} length is 1, then \code{IM_mat} is a vector;
+#' otherwise, \code{IM_mat} is a matrix with row number equals to \code{periods} length.
+#' Each row in \code{IM_mat} is the specified IM exceedance levels for each of IM in \code{periods}.
+#' @param Rjb The Rjb distance from the event to the interest site
+#' @param Vs30 Shear wave velocity averaged over top 30 m (in m/s). A numeric value.
+#' @param z1 Basin depth (km): depth from the ground surface to the 1km/s shear-wave horizon.
+#' -999 if unknown. A numeric value.
+#' @return A hazard curve matrix at the given IM levels for the event
+#' @export
+event_haz_calc <- function (Mag, AORate, Fault_type, region, periods, IM_mat, Rjb, Vs30, z1) {
+
+  Haz_mat <- matrix(data = NA, nrow = nrow(IM_mat), ncol = ncol(IM_mat))
+
+  for (i in 1:length(periods)) {
+
+    Tmp_GMM <- bssa_2014_nga(M = Mag, period = periods[i], Rjb = Rjb, Fault_Type = Fault_type,
+                             region = region, z1 = z1, Vs30 = Vs30,
+                             coeffs = as.matrix(bssa_2014_coeffs))
+
+    Pexd_mat <- stats::pnorm(q = log(IM_mat[i, ]), mean = log(Tmp_GMM$med),
+                             sd = Tmp_GMM$sigma, lower.tail = F )
+
+    Haz_mat[i, ] <- Pexd_mat * AORate
+
+  }
+  return(Haz_mat)
+}
+
+
+
+
+#' The function to construct the hazard matrix given event set and site list
+#'
+#' This is a function to calculate the hazard curves (annual exceedance rate curve)
+#' at all sites from a event set
+#'
+#' @param Y_haz The target hazard. The column names and data format should be consistent with
+#' the example on this page:
+#' \url{https://raw.githubusercontent.com/wltcwpf/Dataset/main/RPSHA/Y_Haz.csv}
+#' @param EventSet The event set. The column names and data format should be consistent with
+#' the example on this page:
+#' \url{https://raw.githubusercontent.com/wltcwpf/Dataset/main/RPSHA/EventSet.csv}
+#' @param SiteTable The site list file set. The column names and data format should be consistent with
+#' the example on this page:
+#' \url{https://raw.githubusercontent.com/wltcwpf/Dataset/main/RPSHA/SiteTable.csv}
+#' @return A dataframe with hazard curves produced by each event in \code{EventSet} is returned.
+#' An example result can be found on this shared Google file:
+#' \url{https://drive.google.com/file/d/1b_vxrXVSW4h0u_hzcrLif6CvQthj2ZO1/view?usp=sharing}
+#' @importFrom dplyr %>%
+#' @importFrom dplyr arrange
+#' @importFrom dplyr distinct
+#' @importFrom dplyr select
+#' @importFrom stats quantile
+#' @export
+events_hazmat_calc <- function (Y_haz, EventSet, SiteTable) {
+
+  # extract IM types and levels in target hazard curves
+  haz_IM_type_level <- Y_haz %>% select(IM_type, IM_level) %>% distinct() %>% arrange()
+  IM_type <- unique(haz_IM_type_level$IM_type)
+  tmp_len <- max(sapply(IM_type, function (x) sum(haz_IM_type_level$IM_type == x)))
+  IM_mat <- matrix(data = NA, nrow = length(IM_type), ncol = tmp_len)
+  for (i in 1:length(IM_type)) {
+    tmp_level <- haz_IM_type_level$IM_level[haz_IM_type_level$IM_type == IM_type[i]]
+    IM_mat[i, 1:length(tmp_level)] <- tmp_level
+  }
+
+  # develop X_haz matrix from each event in EventSet
+  X <- matrix(data = 0, nrow = length(y), ncol = nrow(EventSet))
+  periods <- ifelse(IM_type == 'PGA', 0,
+                    ifelse(IM_type == 'PGV', -1, as.numeric(IM_type)))
+  running_percentages <- round(quantile(seq(1, nrow(EventSet)), probs = seq(0, 1, 0.01)))
+  for (i in 1:nrow(EventSet)) {
+    Fault_type <- ifelse(EventSet$Fault_type[i] == 'R', 3,
+                         ifelse(EventSet$Fault_type[i] == 'N', 2,
+                                ifelse(EventSet$Fault_type[i] == 'SS', 1, 0)))
+    Tmp_Rjb <- as.numeric(EventSet[i, -c(1:4)])
+    Tmp_X <- matrix(data = NA, nrow = length(IM_mat) * nrow(SiteTable), ncol = 4)
+    for (j in 1:nrow(SiteTable)) {
+      tmp_haz <- event_haz_calc(Mag = EventSet$Magnitude[i], AORate = EventSet$AnnualOccurrenceRate[i],
+                                Fault_type = Fault_type, region = 1, periods = periods,
+                                IM_mat = IM_mat, Rjb = Tmp_Rjb[j],
+                                Vs30 = SiteTable$Vs30[j], z1 = SiteTable$z1[j])
+      Tmp_X[((j-1)*length(IM_mat) + 1):(j*length(IM_mat)), 1] <- SiteTable$SiteName[j]
+      Tmp_X[((j-1)*length(IM_mat) + 1):(j*length(IM_mat)), 2] <- rep(IM_type, each = ncol(IM_mat))
+      Tmp_X[((j-1)*length(IM_mat) + 1):(j*length(IM_mat)), 3] <- c(t(IM_mat))
+      Tmp_X[((j-1)*length(IM_mat) + 1):(j*length(IM_mat)), 4] <- c(t(tmp_haz))
+    }
+    Tmp_X <- as.data.frame(Tmp_X)
+    colnames(Tmp_X) <- c('SiteName', 'IM_type', 'IM_level', 'Haz_hat')
+    Tmp_X$IM_level <- as.numeric(Tmp_X$IM_level)
+    Tmp_X$Haz_hat <- as.numeric(Tmp_X$Haz_hat)
+    Tmp_X <- left_join(Y_haz, Tmp_X, by = c('SiteName', 'IM_type', 'IM_level'))
+    X[, i] <- Tmp_X$Haz_hat
+    if (i %in% running_percentages) {
+      print(paste0('The calculation is completed by ',
+                   names(running_percentages)[which(running_percentages == i)]))
+    }
+  }
+
+  X_haz <- Y_haz[c('IM_type', 'IM_level', 'SiteName')]
+  X_haz <- cbind(X_haz, X)
+  colnames(X_haz)[-c(1:3)] <- paste0('EventID_', EventSet$EventID)
+
+  return(X_haz)
+}
+
+
 
