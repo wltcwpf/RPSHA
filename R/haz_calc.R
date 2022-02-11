@@ -293,7 +293,7 @@ events_hazmat_calc <- function (Y_haz, EventSet, SiteTable) {
   }
 
   # develop X_haz matrix from each event in EventSet
-  X <- matrix(data = 0, nrow = length(y), ncol = nrow(EventSet))
+  X <- matrix(data = 0, nrow = nrow(Y_haz), ncol = nrow(EventSet))
   periods <- ifelse(IM_type == 'PGA', 0,
                     ifelse(IM_type == 'PGV', -1, as.numeric(IM_type)))
   running_percentages <- round(quantile(seq(1, nrow(EventSet)), probs = seq(0, 1, 0.01)))
