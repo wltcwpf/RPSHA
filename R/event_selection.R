@@ -8,14 +8,14 @@
 #' @param Y The target hazard and target hazard magnitude/distance distributions
 #' @param X The hazard matrix produced by each of the considered events
 #' @param target_num The number of final selected event subset, a positive integer
-#' @param max_amp The maximum amplification adjusted factor, a positive numeric number. It is only
-#' working when target_num is not set
+#' @param max_rate_multiplier The maximum value for the multiplier of annual occurrence rate,
+#' a positive numeric number. It is only working when \code{target_num} is not set.
 #' @param min_hazard The minimum hazard value in \code{Y} that is considered in regression.
 #' This is used to avoid having extremely large weights. Note the weights is 1/\code{Y}.
 #' The default value for \code{min_hazard} is 1e-7.
 #'
 #' @return A list of three elements is returned. The first element is
-#' the corresponding adjusted amplification factors to each event
+#' the corresponding adjusted rate multipliers for each event
 #' (or each column in \code{X}), the second element is recovered hazard by the selected subset events,
 #' and the last element is the logarithmic mean squared error.
 #' The events with positive factors are selected events and the events with factors = 0 are
@@ -25,7 +25,7 @@
 #' @importFrom stats median
 #'
 #' @export
-event_selection <- function(Y, X, target_num = NULL, max_amp = NULL, min_hazard = 1e-7) {
+event_selection <- function(Y, X, target_num = NULL, max_rate_multiplier = NULL, min_hazard = 1e-7) {
 
   Weight <- 1 / Y
 
@@ -35,8 +35,8 @@ event_selection <- function(Y, X, target_num = NULL, max_amp = NULL, min_hazard 
     Idx_include <- seq(1, length(Y))
   }
 
-  if (is.null(target_num) & is.null(max_amp))
-    stop('Please input a valid number for either target_num or max_amp!')
+  if (is.null(target_num) & is.null(max_rate_multiplier))
+    stop('Please input a valid number for either target_num or max_rate_multiplier!')
 
   if (!is.null(target_num) & (target_num > 0)) {
 
@@ -69,14 +69,14 @@ event_selection <- function(Y, X, target_num = NULL, max_amp = NULL, min_hazard 
 
     return(res)
 
-  } else if (!is.null(max_amp) & (max_amp > 0)) {
+  } else if (!is.null(max_rate_multiplier) & (max_rate_multiplier > 0)) {
 
-    # use the maximum amplification factors to constrain
+    # use the maximum rate multipliers to constrain
     lasso_res <- glmnet(x = X[Idx_include, ], y = Y[Idx_include],
                         weights = Weight[Idx_include], pmax = ncol(X),
                         lambda.min.ratio = 0, nlambda = 10000,
                         lower.limits = 0, intercept = F,
-                        upper.limits = max_amp)
+                        upper.limits = max_rate_multiplier)
 
     betas <- lasso_res$beta[, ncol(lasso_res$beta)]
 
@@ -93,7 +93,7 @@ event_selection <- function(Y, X, target_num = NULL, max_amp = NULL, min_hazard 
     return(res)
 
   } else {
-    stop('Please input a valid number for either target_num or max_amp!')
+    stop('Please input a valid number for either target_num or max_rate_multiplier!')
   }
 }
 

@@ -4,7 +4,13 @@
 \alias{event_selection}
 \title{A function for event selection}
 \usage{
-event_selection(Y, X, target_num = NULL, max_amp = NULL, min_hazard = 1e-07)
+event_selection(
+  Y,
+  X,
+  target_num = NULL,
+  max_rate_multiplier = NULL,
+  min_hazard = 1e-07
+)
 }
 \arguments{
 \item{Y}{The target hazard and target hazard magnitude/distance distributions}
@@ -13,8 +19,8 @@ event_selection(Y, X, target_num = NULL, max_amp = NULL, min_hazard = 1e-07)
 
 \item{target_num}{The number of final selected event subset, a positive integer}
 
-\item{max_amp}{The maximum amplification adjusted factor, a positive numeric number. It is only
-working when target_num is not set}
+\item{max_rate_multiplier}{The maximum value for the multiplier of annual occurrence rate,
+a positive numeric number. It is only working when \code{target_num} is not set.}
 
 \item{min_hazard}{The minimum hazard value in \code{Y} that is considered in regression.
 This is used to avoid having extremely large weights. Note the weights is 1/\code{Y}.
@@ -22,7 +28,7 @@ The default value for \code{min_hazard} is 1e-7.}
 }
 \value{
 A list of three elements is returned. The first element is
-the corresponding adjusted amplification factors to each event
+the corresponding adjusted rate multipliers for each event
 (or each column in \code{X}), the second element is recovered hazard by the selected subset events,
 and the last element is the logarithmic mean squared error.
 The events with positive factors are selected events and the events with factors = 0 are
