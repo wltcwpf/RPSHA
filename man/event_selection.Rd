@@ -8,7 +8,7 @@ event_selection(
   Y,
   X,
   target_num = NULL,
-  max_rate_multiplier = NULL,
+  max_rate_multiplier = 1000,
   min_hazard = 1e-07
 )
 }

@@ -25,7 +25,7 @@
 #' @importFrom stats median
 #'
 #' @export
-event_selection <- function(Y, X, target_num = NULL, max_rate_multiplier = NULL, min_hazard = 1e-7) {
+event_selection <- function(Y, X, target_num = NULL, max_rate_multiplier = 1000, min_hazard = 1e-7) {
 
   Weight <- 1 / Y
 
@@ -53,11 +53,15 @@ event_selection <- function(Y, X, target_num = NULL, max_rate_multiplier = NULL,
     # correct the penalized coefficients
     re_correction_factor <- log(Y[Idx_include]) - log(X[Idx_include, ] %*% betas)
 
-    re_correction_factor <- exp(median(re_correction_factor[re_correction_factor != Inf]))
+    re_correction_factor <- exp(mean(re_correction_factor[re_correction_factor != Inf]))
 
     betas <- betas * re_correction_factor
 
-    mse <- mean((log(Y[Idx_include]) - log(X[Idx_include, ] %*% betas))^2)
+    m_sq_logerr <- mean((log(Y[Idx_include]) - log(X[Idx_include, ] %*% betas))^2)
+
+    m_abs_log_rediff <- mean(abs((log(Y[Idx_include]) - log(X[Idx_include, ] %*% betas))/log(Y[Idx_include])))
+
+    m_abs_rediff <- mean(abs((Y[Idx_include] - X[Idx_include, ] %*% betas)/Y[Idx_include]))
 
     res <- list()
 
@@ -65,7 +69,11 @@ event_selection <- function(Y, X, target_num = NULL, max_rate_multiplier = NULL,
 
     res$Y_hat <- X %*% betas
 
-    res$mse <- mse
+    res$m_sq_logerr <- m_sq_logerr
+
+    res$m_abs_log_rediff <- m_abs_log_rediff
+
+    res$m_abs_rediff <- m_abs_rediff
 
     return(res)
 
@@ -82,13 +90,21 @@ event_selection <- function(Y, X, target_num = NULL, max_rate_multiplier = NULL,
 
     res <- list()
 
-    mse <- mean((log(Y[Idx_include]) - log(X[Idx_include, ] %*% betas))^2)
+    m_sq_logerr <- mean((log(Y[Idx_include]) - log(X[Idx_include, ] %*% betas))^2)
+
+    m_abs_log_rediff <- mean(abs((log(Y[Idx_include]) - log(X[Idx_include, ] %*% betas))/log(Y[Idx_include])))
+
+    m_abs_rediff <- mean(abs((Y[Idx_include] - X[Idx_include, ] %*% betas)/Y[Idx_include]))
 
     res$betas <- betas
 
     res$Y_hat <- X %*% betas
 
-    res$mse <- mse
+    res$m_sq_logerr <- m_sq_logerr
+
+    res$m_abs_log_rediff <- m_abs_log_rediff
+
+    res$m_abs_rediff <- m_abs_rediff
 
     return(res)
 
