@@ -25,7 +25,7 @@
 #' @importFrom stats median
 #'
 #' @export
-event_selection <- function(Y, X, target_num = NULL, max_rate_multiplier = 1000, min_hazard = 1e-7) {
+event_selection <- function(Y, X, target_num = NULL, max_rate_multiplier = NULL, min_hazard = 1e-7) {
 
   Weight <- 1 / Y
 
@@ -38,17 +38,29 @@ event_selection <- function(Y, X, target_num = NULL, max_rate_multiplier = 1000,
   if (is.null(target_num) & is.null(max_rate_multiplier))
     stop('Please input a valid number for either target_num or max_rate_multiplier!')
 
+  # run LASSO
+  lasso_res <- glmnet(x = X[Idx_include, ], y = Y[Idx_include],
+                      weights = Weight[Idx_include],
+                      lambda.min.ratio = 0, nlambda = 10000,
+                      lower.limits = 0, intercept = F,
+                      relax = TRUE)
+
   if (!is.null(target_num) & (target_num > 0)) {
 
-    target_num <- round(target_num)
     # use number of final selected events to constrain
-    lasso_res <- glmnet(x = X[Idx_include, ], y = Y[Idx_include],
-                        weights = Weight[Idx_include], pmax = ncol(X),
-                        lambda.min.ratio = 0, nlambda = 10000,
-                        lower.limits = 0, intercept = F,
-                        dfmax = target_num)
+    target_num <- round(target_num)
 
-    betas <- lasso_res$beta[, ncol(lasso_res$beta)]
+    num_increasing <- apply(lasso_res$relaxed$beta, 2, function(x) sum(x > 1))
+
+    idx <- which(num_increasing <= target_num)
+
+    idx <- idx[which.max(lasso_res$relaxed$dev.ratio[idx])]
+
+    tmp_betas <- lasso_res$relaxed$beta[, idx]
+
+    betas <- rep(0, length(tmp_betas))
+
+    betas[tmp_betas > 1] <- tmp_betas[tmp_betas > 1]
 
     # correct the penalized coefficients
     re_correction_factor <- log(Y[Idx_include]) - log(X[Idx_include, ] %*% betas)
@@ -80,13 +92,13 @@ event_selection <- function(Y, X, target_num = NULL, max_rate_multiplier = 1000,
   } else if (!is.null(max_rate_multiplier) & (max_rate_multiplier > 0)) {
 
     # use the maximum rate multipliers to constrain
-    lasso_res <- glmnet(x = X[Idx_include, ], y = Y[Idx_include],
-                        weights = Weight[Idx_include], pmax = ncol(X),
-                        lambda.min.ratio = 0, nlambda = 10000,
-                        lower.limits = 0, intercept = F,
-                        upper.limits = max_rate_multiplier)
+    max_multi <- apply(lasso_res$relaxed$beta, 2, max)
 
-    betas <- lasso_res$beta[, ncol(lasso_res$beta)]
+    idx <- which(max_multi <= max_rate_multiplier)
+
+    idx <- idx[which.max(lasso_res$relaxed$dev.ratio[idx])]
+
+    betas <- lasso_res$beta[, idx]
 
     res <- list()
 
