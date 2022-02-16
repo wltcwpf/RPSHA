@@ -1,5 +1,5 @@
 Package: RPSHA
-Title: What the Package Does (One Line, Title Case)
+Title: This package implements LASSO to conduct earthquake event/ground motion map selection
 Version: 0.0.0.9000
 Authors@R: 
     person(given = "Pengfei",
@@ -20,10 +20,10 @@ Imports:
     Rcpp,
     utils,
     geosphere,
-    dplyr,
-    glmnet
+    dplyr
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Depends: 
-    R (>= 2.10)
+    R (>= 2.10),
+    glmnet (>= 4.1)
