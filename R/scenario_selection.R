@@ -110,8 +110,14 @@ scenario_selection <- function(Y, X, min_hazard = 1e-7, output_dir = NULL, max_r
     betas <- betas * re_correction_factor
     betas_mat[, i] <- betas
 
-    m_sq_logerr[i] <- mean((log(Y[Idx_include]) - log(X[Idx_include, ] %*% betas))^2)
-    m_abs_log_rediff[i] <- mean(abs((log(Y[Idx_include]) - log(X[Idx_include, ] %*% betas))/log(Y[Idx_include])))
+    m_sq_logerr[i] <- mean((log(Y[Idx_include]) -
+                              ifelse(X[Idx_include, ] %*% betas == 0,
+                                     0,
+                                     log(X[Idx_include, ] %*% betas)))^2)
+    m_abs_log_rediff[i] <- mean(abs((log(Y[Idx_include]) -
+                                       ifelse(X[Idx_include, ] %*% betas == 0,
+                                              0,
+                                              log(X[Idx_include, ] %*% betas)))/log(Y[Idx_include])))
     m_abs_rediff[i] <- mean(abs((Y[Idx_include] - X[Idx_include, ] %*% betas)/Y[Idx_include]))
     Y_hat[, i] <- X %*% betas
 
@@ -145,6 +151,5 @@ scenario_selection <- function(Y, X, min_hazard = 1e-7, output_dir = NULL, max_r
   res$Y_hat <- Y_hat
   return(res)
 }
-
 
 
