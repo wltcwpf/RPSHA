@@ -17,6 +17,13 @@
 #' The rate multipliers are not straightly constrained: the rate multipliers could be much larger
 #' when the number of selected scenarios is too small; and the rate multipliers will get better
 #' constrained when the number of selected scenarios gets more.
+#' @param num_lambda The maximum number of trail penalty parameters. A larger \code{num_lambda}
+#' will search for more possible subset events.
+#' @param Weight The weight vector for each element in \code{Y}. The default is 1 that indicates
+#' using the default weight of scenario selection algorithm (which is 1/\code{Y}). If the other
+#' weights are preferred, then a vector with the same length as \code{Y} for the desired weights
+#' can be specified. Since the weight of 1/\code{Y} has been set in the function, so you'd need
+#' to multiply your desired weights by \code{Y} to compensate the default weights.
 #'
 #' @return A list of three elements is returned. The first element is
 #' the corresponding adjusted rate multipliers for each event
@@ -38,9 +45,10 @@
 #' @importFrom utils setTxtProgressBar
 #'
 #' @export
-scenario_selection <- function(Y, X, min_hazard = 1e-7, output_dir = NULL, max_rate_multiplier = NULL) {
+scenario_selection <- function(Y, X, min_hazard = 1e-7, output_dir = NULL, max_rate_multiplier = NULL,
+                               num_lambda = 10000, Weight = 1) {
 
-  Weight <- 1 / Y
+  Weight <- (1 / Y) * Weight
 
   if (is.numeric(min_hazard) & (min_hazard >= 0)) {
     Idx_include <- which(Y >= min_hazard)  # only consider the hazards with more than min_hazard
@@ -53,27 +61,27 @@ scenario_selection <- function(Y, X, min_hazard = 1e-7, output_dir = NULL, max_r
     cat('Conduct selection \n')
     lasso_res <- glmnet(x = X[Idx_include, ], y = Y[Idx_include],
                         weights = Weight[Idx_include],
-                        lambda.min.ratio = 0, nlambda = 10000,
+                        lambda.min.ratio = 0, nlambda = num_lambda,
                         lower.limits = 0, intercept = F, trace.it = TRUE)
 
     lasso_res <- relax.glmnet(fit = lasso_res,
                               x = X[Idx_include, ], y = Y[Idx_include],
                               weights = Weight[Idx_include],
-                              lambda.min.ratio = 0, nlambda = 10000,
+                              lambda.min.ratio = 0, nlambda = num_lambda,
                               lower.limits = 0, intercept = F,
                               trace.it = FALSE)
   } else if (max_rate_multiplier > 0) {
     cat('Conduct selection \n')
     lasso_res <- glmnet(x = X[Idx_include, ], y = Y[Idx_include],
                         weights = Weight[Idx_include],
-                        lambda.min.ratio = 0, nlambda = 10000,
+                        lambda.min.ratio = 0, nlambda = num_lambda,
                         lower.limits = 0, intercept = F, trace.it = TRUE,
                         upper.limits = max_rate_multiplier)
 
     lasso_res <- relax.glmnet(fit = lasso_res,
                               x = X[Idx_include, ], y = Y[Idx_include],
                               weights = Weight[Idx_include],
-                              lambda.min.ratio = 0, nlambda = 10000,
+                              lambda.min.ratio = 0, nlambda = num_lambda,
                               lower.limits = 0, intercept = F,
                               trace.it = FALSE,
                               upper.limits = max_rate_multiplier)

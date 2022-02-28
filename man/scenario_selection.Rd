@@ -9,7 +9,9 @@ scenario_selection(
   X,
   min_hazard = 1e-07,
   output_dir = NULL,
-  max_rate_multiplier = NULL
+  max_rate_multiplier = NULL,
+  num_lambda = 10000,
+  Weight = 1
 )
 }
 \arguments{
@@ -28,6 +30,15 @@ a positive numeric number. It is an additional constraint for scenario selection
 The rate multipliers are not straightly constrained: the rate multipliers could be much larger
 when the number of selected scenarios is too small; and the rate multipliers will get better
 constrained when the number of selected scenarios gets more.}
+
+\item{num_lambda}{The maximum number of trail penalty parameters. A larger \code{num_lambda}
+will search for more possible subset events.}
+
+\item{Weight}{The weight vector for each element in \code{Y}. The default is 1 that indicates
+using the default weight of scenario selection algorithm (which is 1/\code{Y}). If the other
+weights are preferred, then a vector with the same length as \code{Y} for the desired weights
+can be specified. Since the weight of 1/\code{Y} has been set in the function, so you'd need
+to multiply your desired weights by \code{Y} to compensate the default weights.}
 }
 \value{
 A list of three elements is returned. The first element is
