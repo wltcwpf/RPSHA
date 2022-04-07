@@ -24,10 +24,6 @@
 #' weights are preferred, then a vector with the same length as \code{Y} for the desired weights
 #' can be specified. Since the weight of 1/\code{Y} has been set in the function, so you'd need
 #' to multiply your desired weights by \code{Y} to compensate the default weights.
-#' @param min_rate_adj The minimum rate multiplier (or adjustments) for the selected events.
-#' The default is 1, which means that the selected events with rate adjustments less than
-#' \code{min_rate_adj} will be removed and the rate adjustments of the remaining selected
-#' events will be updated. Note \code{min_rate_adj} needs to be non-negative value.
 #'
 #' @return A list of three elements is returned. The first element is
 #' the corresponding adjusted rate multipliers for each event
@@ -50,7 +46,7 @@
 #'
 #' @export
 scenario_selection <- function(Y, X, min_hazard = 1e-7, output_dir = NULL, max_rate_multiplier = NULL,
-                               num_lambda = 10000, Weight = 1, min_rate_adj = 1) {
+                               num_lambda = 10000, Weight = 1) {
 
   Weight <- (1 / Y) * Weight
 
@@ -94,8 +90,7 @@ scenario_selection <- function(Y, X, min_hazard = 1e-7, output_dir = NULL, max_r
   }
 
   # get the series of selected event sets
-  if (min_rate_adj < 0) stop('min_rate_adj is not valid, please correct it!')
-  num_increasing <- apply(lasso_res$relaxed$beta, 2, function(x) sum(x > min_rate_adj)) # only keep the variables that have multiplier > min_rate_adj
+  num_increasing <- apply(lasso_res$relaxed$beta, 2, function(x) sum(x > 0))
   uni_num <- sort(unique(num_increasing[num_increasing > 0]))
   idx <- as.numeric(sapply(uni_num, function(x) {
     # find the index such that the corresponding dev.ratio is max.
@@ -109,19 +104,12 @@ scenario_selection <- function(Y, X, min_hazard = 1e-7, output_dir = NULL, max_r
   Y_hat <- matrix(data = 0, nrow = length(Y), ncol = length(idx))
   betas_mat <- matrix(data = 0, nrow = ncol(X), ncol = length(idx))
 
-  cat('Re-correct and output results \n')
+  cat('Prepare and output results \n')
   pb <- txtProgressBar(min = 0, max = length(idx), initial = 0,
                        style = 3)
 
   for (i in 1:length(idx)) {
     betas <- lasso_res$relaxed$beta[, idx[i]]
-    betas <- ifelse(betas > min_rate_adj, betas, 0)
-
-    # correct the penalized coefficients
-    re_correction_factor <- log(Y[Idx_include]) - log(X[Idx_include, ] %*% betas)
-    re_correction_factor <- exp(mean(re_correction_factor[re_correction_factor != Inf]))
-    if (re_correction_factor > 1)
-      betas <- betas * re_correction_factor
     betas_mat[, i] <- betas
 
     m_sq_logerr[i] <- mean((log(Y[Idx_include]) -

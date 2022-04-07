@@ -11,8 +11,7 @@ scenario_selection(
   output_dir = NULL,
   max_rate_multiplier = NULL,
   num_lambda = 10000,
-  Weight = 1,
-  min_rate_adj = 1
+  Weight = 1
 )
 }
 \arguments{
@@ -40,11 +39,6 @@ using the default weight of scenario selection algorithm (which is 1/\code{Y}). 
 weights are preferred, then a vector with the same length as \code{Y} for the desired weights
 can be specified. Since the weight of 1/\code{Y} has been set in the function, so you'd need
 to multiply your desired weights by \code{Y} to compensate the default weights.}
-
-\item{min_rate_adj}{The minimum rate multiplier (or adjustments) for the selected events.
-The default is 1, which means that the selected events with rate adjustments less than
-\code{min_rate_adj} will be removed and the rate adjustments of the remaining selected
-events will be updated. Note \code{min_rate_adj} needs to be non-negative value.}
 }
 \value{
 A list of three elements is returned. The first element is
