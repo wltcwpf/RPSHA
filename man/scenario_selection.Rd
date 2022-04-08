@@ -10,7 +10,7 @@ scenario_selection(
   min_hazard = 1e-07,
   output_dir = NULL,
   max_rate_multiplier = NULL,
-  num_lambda = 10000,
+  num_lambda = 1000,
   Weight = 1
 )
 }

@@ -46,7 +46,7 @@
 #'
 #' @export
 scenario_selection <- function(Y, X, min_hazard = 1e-7, output_dir = NULL, max_rate_multiplier = NULL,
-                               num_lambda = 10000, Weight = 1) {
+                               num_lambda = 1000, Weight = 1) {
 
   Weight <- (1 / Y) * Weight
 
