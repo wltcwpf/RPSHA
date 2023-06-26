@@ -11,6 +11,7 @@ license](https://img.shields.io/badge/License-MIT-green.svg)](https://github.com
 Issues!](https://img.shields.io/badge/Report%20Issues-Here-1abc9c.svg)](https://github.com/wltcwpf/RPSHA/issues)
 [![Open Source?
 Yes!](https://img.shields.io/badge/Open%20Source-Yes-green.svg)](https://github.com/wltcwpf/RPSHA)
+[![DOI](https://zenodo.org/badge/443699388.svg)](https://zenodo.org/badge/latestdoi/443699388)
 <!-- badges: end -->
 
 RPSHA stands for Regional Probabilistic Seismic Hazard Assessment. This
